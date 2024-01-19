@@ -1,54 +1,51 @@
-#include <GLFW/glfw3.h>
+#include "./subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
 #include <cstddef>
 #include <cstdlib>
-
-// int main(void) {
-//     GLFWwindow *window;
-
-//     /* Initialize the library */
-//     if (!glfwInit())
-//         return -1;
-
-//     /* Create a windowed mode window and its OpenGL context */
-//     window = glfwCreateWindow(640, 480, "GLFW CMake starter", NULL, NULL);
-//     if (!window) {
-//         glfwTerminate();
-//         return -1;
-//     }
-
-//     /* Make the window's context current */
-//     glfwMakeContextCurrent(window);
-//     glClearColor(0.4f, 0.3f, 0.4f, 0.0f);
-
-//     /* Loop until the user closes the window */
-//     while (!glfwWindowShouldClose(window)) {
-//         /* Render here */
-//         glClear(GL_COLOR_BUFFER_BIT);
-
-//         /* Swap front and back buffers */
-//         glfwSwapBuffers(window);
-
-//         /* Poll for and process events */
-//         glfwPollEvents();
-//     }
-
-//     glfwTerminate();
-//     return 0;
-// }
+#include <iostream>
 
 int main() {
-    glfwInit();
+    /* glfwInit returns GLFW_TRUE if the initialization process succeeds
+     * otherwise GFLW_FALSE*/
 
-    // Config for GLFW and OpenGL Legacy
+    if (glfwInit() != GLFW_TRUE) {
+        std::cerr << "Initialization failed.";
+    }
+
+    /* Config for GLFW and OpenGL Legacy */
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow *window = glfwCreateWindow(800, 600, "Test Window", NULL, NULL);
+    /* We create a GLFW window and assign the attributes. */
+    GLFWwindow *window =
+        glfwCreateWindow(800, 600, "Test Window", NULL, NULL);
 
     if (window == NULL) {
         glfwTerminate();
         return EXIT_FAILURE;
+    }
+
+    /* Since an OpenGL context can have as many windows or drawable
+     * items on a screen, we can create as many windows we like and
+     * place them in the OpenGL Context.*/
+    glfwMakeContextCurrent(window);
+
+    /* The context will remain current until you make another context
+    current or until the window owning the current context is
+    destroyed.*/
+
+    /* We create some eventListener to monitor when we close a window in
+     any
+     * way and we accomplish that with `glfwWindownShouldClose()` which
+     returns
+     * a flag if our window in a particular context has been closed.
+     * We can also use callbacks to achieve the same effect by creating
+     * a function callback and use glfwSetCallback(window, callback) to
+     handle an
+     * event of a particular key pressed or action to close the window.
+    */
+    while (!glfwWindowShouldClose(window)) {
+        // Keep running
     }
 
     glfwTerminate();
