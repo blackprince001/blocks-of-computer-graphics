@@ -3,6 +3,12 @@
 #include <cstdlib>
 #include <iostream>
 
+/* first callback to close the window when ESC is pressed. */
+void close_window_on_esc(GLFWwindow *window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+}
+
 int main() {
     /* glfwInit returns GLFW_TRUE if the initialization process succeeds
      * otherwise GFLW_FALSE*/
@@ -45,7 +51,25 @@ int main() {
      * event of a particular key pressed or action to close the window.
     */
     while (!glfwWindowShouldClose(window)) {
-        // Keep running
+        close_window_on_esc(window);
+
+        // for some reason the render here does not work and I dont know
+        // why yet
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        /* we look out for events and swapbuffers for our window.The
+         * glfwPollEvents function checks if any events are triggered
+         * (like keyboard input or mouse movement events), updates the
+         * state, and calls the corresponding functions (which we can
+         * register via callback methods).
+         */
+        glfwPollEvents();
+        /* The glfwSwapBuffers will swap the color buffer (a large 2D
+         * buffer that contains color values for each pixel in GLFW’s
+         * window) that is used to render to during this render
+         * iteration and show it as output to the screen.*/
+        glfwSwapBuffers(window);
     }
 
     glfwTerminate();
