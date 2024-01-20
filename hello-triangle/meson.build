@@ -12,4 +12,4 @@ glfw_dep = glfw_proj.get_variable('glfw_dep')
 # glfw_dep = glfw_proj.dependency('all')
 
 executable('hello-triangle',
-           'main.cpp', dependencies: glfw_dep)
+           'main.cpp', dependencies: glfw_dep, link_args: '-lGL')
