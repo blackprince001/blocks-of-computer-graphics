@@ -1,6 +1,5 @@
+#include "./lib/glad.c"
 #include "./subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include <cstddef>
 #include <cstdlib>
 #include <iostream>
@@ -36,9 +35,7 @@ int main() {
 
   // initialize the id for an opengl object
   unsigned int vbo;
-  glGenBUffers(1, &vbo);
-
-  glBindTexture(GL_ARRAY_BUFFER, vbo);
+  glGenBuffers(1, &vbo);
 
   while (!glfwWindowShouldClose(window)) {
     close_window_on_esc(window);
