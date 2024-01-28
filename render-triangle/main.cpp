@@ -16,14 +16,6 @@ void InitializeGlfw()
   }
 }
 
-void InitializeGlad()
-{
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    std::cerr << "Failed to initialize GLAD";
-    exit(EXIT_FAILURE);
-  }
-}
-
 void InitializeViewport(GLFWwindow* window, int width, int height)
 {
   glfwGetFramebufferSize(window, &width, &height);
@@ -53,14 +45,13 @@ void close_window_on_esc(GLFWwindow* window)
 int main()
 {
   InitializeGlfw();
-  InitializeGlad();
 
   setGlfwConfig();
 
   GLFWwindow* window
       = glfwCreateWindow(ScrenWidth, ScreenHeight, "Test Window", NULL, NULL);
 
-  InitializeViewport(window, ScrenWidth, ScreenHeight);
+  // InitializeViewport(window, ScrenWidth, ScreenHeight);
 
   if (window == NULL) {
     glfwTerminate();
