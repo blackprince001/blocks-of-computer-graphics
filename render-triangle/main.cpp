@@ -3,7 +3,7 @@
 #include <iostream>
 #include <ratio>
 
-#include "./lib/glad.c"
+#include "./lib/include/glad/glad.h"
 #include "./subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
 
 const int ScrenWidth = 800;
@@ -13,6 +13,15 @@ void InitializeGlfw()
 {
   if (glfwInit() != GLFW_TRUE) {
     std::cerr << "Initialization failed.";
+  }
+}
+
+void InitializeGlad()
+{
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+    std::cout << "Failed to initialize GLAD\n";
+    glfwTerminate();
+    std::exit(EXIT_FAILURE);
   }
 }
 
@@ -60,12 +69,15 @@ int main()
 
   glfwMakeContextCurrent(window);
 
+  // You make context first then initialize Glad. How stupid I was.
+  InitializeGlad();
+
   // add vertex data for a triangle
   float vertices[]
       = { -0.5f, -0.5f, 0.0f, 0.5f, -0.5f, 0.0f, 0.0f, 0.5f, 0.0f };
 
   // initialize the id for an opengl object
-  unsigned int vertex_buffer_object {};
+  GLuint vertex_buffer_object {};
   glGenBuffers(1, &vertex_buffer_object);
 
   // we bind the our buffer id to it's type
