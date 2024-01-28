@@ -1,8 +1,9 @@
-#version 410 core
+// shader versions mostly match the opengl version
+#version 330 core
 
-in vec position;
+layout (location = 0) in vec3 aPos;
 
 void main()
 {
-    ...
+    gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
 }
