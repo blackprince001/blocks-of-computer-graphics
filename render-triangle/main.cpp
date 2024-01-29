@@ -111,8 +111,16 @@ int main()
   GLuint vertex_buffer_object {};
   glGenBuffers(1, &vertex_buffer_object);
 
+  GLuint vertex_array_object {};
+  glGenVertexArrays(1, &vertex_array_object);
+
+  glBindVertexArray(vertex_array_object);
+
   // we bind the our buffer id to it's type
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+  glEnableVertexAttribArray(0);
 
   // so that we can afford to call that bind to copy all the buffers
   // with glBufferData which has all the vertice data into memory.
@@ -188,11 +196,12 @@ int main()
   while (!glfwWindowShouldClose(window)) {
     close_window_on_esc(window);
 
-    glUseProgram(shader_program);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+
+    glUseProgram(shader_program);
+    glBindVertexArray(vertex_array_object);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
 
     glfwPollEvents();
     glfwSwapBuffers(window);
