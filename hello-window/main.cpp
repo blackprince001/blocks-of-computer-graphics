@@ -4,12 +4,14 @@
 #include <iostream>
 
 /* first callback to close the window when ESC is pressed. */
-void close_window_on_esc(GLFWwindow *window) {
+void close_window_on_esc(GLFWwindow* window)
+{
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
 }
 
-int main() {
+int main()
+{
   /* glfwInit returns GLFW_TRUE if the initialization process succeeds
    * otherwise GFLW_FALSE*/
 
@@ -23,8 +25,7 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
   /* We create a GLFW window and assign the attributes. */
-  GLFWwindow *window =
-      glfwCreateWindow(800, 600, "Test Window", NULL, NULL);
+  GLFWwindow* window = glfwCreateWindow(800, 600, "Test Window", NULL, NULL);
 
   if (window == NULL) {
     glfwTerminate();
@@ -55,7 +56,7 @@ int main() {
 
     // for some reason the render here does not work and I dont know
     // why yet
-    glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+    glClearColor(1.0F, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
 
     /* we look out for events and swapbuffers for our window.The
