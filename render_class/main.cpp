@@ -52,8 +52,9 @@ int main() {
         " gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
         "}\0";
 
-    ShaderObject vertex_shader =
-        ShaderObject(GL_VERTEX_SHADER, vertex_shader_source);
+    ShaderObject vertex_shader = ShaderObject(GL_VERTEX_SHADER);
+
+    vertex_shader.set_shader_source(vertex_shader_source);
 
     vertex_shader.compile();
 
@@ -65,8 +66,9 @@ int main() {
         " FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
         "}\0";
 
-    ShaderObject frag_shader =
-        ShaderObject(GL_FRAGMENT_SHADER, fragment_shader_source);
+    ShaderObject frag_shader = ShaderObject(GL_FRAGMENT_SHADER);
+
+    frag_shader.set_shader_source(fragment_shader_source);
 
     frag_shader.compile();
 

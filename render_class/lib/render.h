@@ -102,11 +102,12 @@ class VertexObject {
 
 class ShaderObject {
   public:
-    GLuint id;
+    GLuint id{};
+    unsigned int shader_type;
 
-    ShaderObject(int SHADER_TYPE, const char *shader_source) {
-        this->id = glCreateShader(SHADER_TYPE);
-        glShaderSource(this->id, 1, &shader_source, nullptr);
+    ShaderObject(unsigned int shader_type) {
+        this->shader_type = shader_type;
+        this->id = glCreateShader(shader_type);
     }
 
     void log_shader_error(const unsigned int shader,
@@ -122,6 +123,10 @@ class ShaderObject {
         std::cout << log_info << std::endl;
 
         std::exit(EXIT_FAILURE);
+    }
+
+    void set_shader_source(const char *shader_source) {
+        glShaderSource(this->id, 1, &shader_source, nullptr);
     }
 
     void compile() {
