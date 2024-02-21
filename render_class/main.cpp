@@ -11,11 +11,6 @@
 const int SCREENWIDTH = 800;
 const int SCREENHEIGHT = 600;
 
-void close_window_on_esc(GLFWwindow *window) {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-}
-
 int main() {
     Renderer renderer{};
 
@@ -77,18 +72,7 @@ int main() {
 
     shader_program.compile_shader_program();
 
-    while (!glfwWindowShouldClose(window)) {
-        close_window_on_esc(window);
-
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        shader_program.render();
-        vertex_object.draw();
-
-        glfwPollEvents();
-        glfwSwapBuffers(window);
-    }
+    renderer.render(window, shader_program, vertex_object);
 
     renderer.close_renderer();
 }
