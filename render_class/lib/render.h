@@ -4,69 +4,6 @@
 #include "../lib/include/glad/glad.h"
 #include "../subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
 
-class Renderer {
-
-  private:
-    GLFWwindow *window;
-    int screen_width;
-    int screen_height;
-    const char *window_name;
-
-  public:
-    Renderer() {
-        if (glfwInit() != GLFW_TRUE) {
-            std::cerr << "Initialization failed.";
-        }
-
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    }
-
-    void set_window_size(int width, int height) {
-        screen_width = width;
-        screen_height = height;
-    }
-
-    void set_window_name(const char *name) { window_name = name; }
-
-    void close_renderer() {
-        glfwTerminate();
-        exit(EXIT_SUCCESS);
-    }
-
-    GLFWwindow *create_window() {
-        window = glfwCreateWindow(this->screen_width, this->screen_height,
-                                  this->window_name, nullptr, nullptr);
-
-        if (window == nullptr) {
-            std::cerr << "Failed to create GLFW window" << std::endl;
-            glfwTerminate();
-            std::exit(EXIT_FAILURE);
-        }
-
-        glfwMakeContextCurrent(window);
-        return window;
-    }
-
-    void initial_glad() {
-        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-            std::cerr << "Failed to initialize GLAD" << std::endl;
-            this->close_renderer();
-        }
-    }
-
-    void initial_viewport(GLFWwindow *window) {
-        glfwGetFramebufferSize(window, &this->screen_width,
-                               &this->screen_height);
-        glViewport(0, 0, this->screen_width, this->screen_height);
-    }
-
-    void create_opengl_context(GLFWwindow *window) {
-        glfwMakeContextCurrent(window);
-    }
-};
-
 class VertexObject {
   private:
     GLuint vertex_buffer_object, vertex_array_object;
@@ -181,4 +118,89 @@ class ShaderProgramObject {
     };
 
     void render() { glUseProgram(shader_program); }
+};
+
+class Renderer {
+
+  private:
+    GLFWwindow *window;
+    int screen_width;
+    int screen_height;
+    const char *window_name;
+
+  public:
+    Renderer() {
+        if (glfwInit() != GLFW_TRUE) {
+            std::cerr << "Initialization failed.";
+        }
+
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    }
+
+    void set_window_size(int width, int height) {
+        screen_width = width;
+        screen_height = height;
+    }
+
+    void set_window_name(const char *name) { window_name = name; }
+
+    void close_renderer() {
+        glfwTerminate();
+        exit(EXIT_SUCCESS);
+    }
+
+    GLFWwindow *create_window() {
+        window = glfwCreateWindow(this->screen_width, this->screen_height,
+                                  this->window_name, nullptr, nullptr);
+
+        if (window == nullptr) {
+            std::cerr << "Failed to create GLFW window" << std::endl;
+            glfwTerminate();
+            std::exit(EXIT_FAILURE);
+        }
+
+        glfwMakeContextCurrent(window);
+        return window;
+    }
+
+    void initial_glad() {
+        if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+            std::cerr << "Failed to initialize GLAD" << std::endl;
+            this->close_renderer();
+        }
+    }
+
+    void initial_viewport(GLFWwindow *window) {
+        glfwGetFramebufferSize(window, &this->screen_width,
+                               &this->screen_height);
+        glViewport(0, 0, this->screen_width, this->screen_height);
+    }
+
+    void create_opengl_context(GLFWwindow *window) {
+        glfwMakeContextCurrent(window);
+    }
+
+    void close_window_on_esc_callback(GLFWwindow *window) {
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+            glfwSetWindowShouldClose(window, true);
+    }
+
+    void render(GLFWwindow *window, ShaderProgramObject &shader_program,
+                VertexObject &vertex_object) {
+
+        while (!glfwWindowShouldClose(window)) {
+            close_window_on_esc_callback(window);
+
+            glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            shader_program.render();
+            vertex_object.draw();
+
+            glfwPollEvents();
+            glfwSwapBuffers(window);
+        }
+    }
 };
