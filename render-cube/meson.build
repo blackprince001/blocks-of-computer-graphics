@@ -5,6 +5,8 @@ project('render-cube', ['cpp', 'c'],
 glfw_proj = subproject('glfw')
 glfw_dep = glfw_proj.get_variable('glfw_dep')
 
+glm_proj = subproject('glm', default_options : ['default_library=static'])
+glm_dep = glm_proj.get_variable('glm_dep')
 # glew_proj = subproject('glew')
 # glew_dep = glew_proj.get_variable('glew_dep')
 
@@ -33,4 +35,4 @@ idep_glad = declare_dependency(
 # glfw_dep = glfw_proj.dependency('all')
 
 executable('render-cube',
-           'main.cpp', dependencies: [glfw_dep, idep_glad], link_args: '-lGL')
+           'main.cpp', dependencies: [glfw_dep, idep_glad, glm_dep], link_args: '-lGL')
