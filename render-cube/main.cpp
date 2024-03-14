@@ -4,7 +4,6 @@
 #include <ratio>
 
 #include "./lib/include/glad/glad.h"
-#include "./lib/shader.hpp"
 #include "./subprojects//glm-1.0.0/glm/gtc/matrix_transform.hpp"
 #include "./subprojects//glm-1.0.0/glm/gtc/type_ptr.hpp"
 #include "./subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
