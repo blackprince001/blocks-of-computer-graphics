@@ -113,10 +113,12 @@ int main() {
     glGenVertexArrays(1, &vertex_array_object);
     glBindVertexArray(vertex_array_object);
 
+    // first stride for the vertex data for the triangles
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
                           (void *)0);
     glEnableVertexAttribArray(0);
 
+    // second stride for the color rgb data for the fragment shaders
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
                           (void *)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
