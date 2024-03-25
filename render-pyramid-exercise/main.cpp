@@ -139,6 +139,7 @@ void main()
     }
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    glEnable(GL_DEPTH_TEST);
 
     glm::mat4 view = glm::mat4(1.0f);
     float zoom_level = -3.0f;
@@ -179,7 +180,7 @@ void main()
         glUniform4f(our_color_uniform_location, 1, 0, pyramid_blue_color, 1.0f);
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glDrawElements(GL_TRIANGLES, 18, GL_UNSIGNED_INT, 0);
         glBindVertexArray(0);
