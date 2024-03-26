@@ -159,11 +159,11 @@ int main() {
         }
         if (move_key_pressed == Move::SCALE_UP) {
             transformation = glm::scale(
-                transformation, glm::vec3(0.05f, 0.05f, 0.05f) * delta_time);
+                transformation, glm::vec3(2.0f, 2.0f, 2.0f) * delta_time);
         }
         if (move_key_pressed == Move::SCALE_DOWN) {
             transformation = glm::scale(
-                transformation, glm::vec3(1.2f, 1.2f, 1.2f) * delta_time);
+                transformation, glm::vec3(0.05f, 0.05f, 0.05f) * delta_time);
         }
 
         // moves from 0.0 - 1.0 under the current time frame
