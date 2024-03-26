@@ -142,11 +142,11 @@ void main()
     glEnable(GL_DEPTH_TEST);
 
     glm::mat4 view = glm::mat4(1.0f);
-    float zoom_level = -3.0f;
+    float zoom_level = -2.0f;
     view = glm::translate(view, glm::vec3(0.0f, 0.0f, zoom_level));
 
     glm::mat4 projection = glm::perspective(
-        glm::radians(45.0f), (float)SCREENWIDTH / (float)SCREENHEIGHT, 0.1f,
+        glm::radians(75.0f), (float)SCREENWIDTH / (float)SCREENHEIGHT, 0.1f,
         100.0f);
 
     unsigned int model_loc = uniform_locator(shader_program, "model");
@@ -169,7 +169,7 @@ void main()
 
         glm::mat4 model = glm::mat4(1.0f);
         model = glm::rotate(model, glm::radians(rotation_angle),
-                            glm::vec3(0.0f, 1.0f, 0.0f));
+                            glm::vec3(1.0f, 0.0f, 0.0f));
         glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
         float pyramid_blue_color = (sin(currrent_time_frame) / 2.0f) + 0.5f;
