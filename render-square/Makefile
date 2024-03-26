@@ -1,5 +1,8 @@
-install:
-	meson wrap install glfw glm
+install-glfw:
+	meson wrap install glfw
+
+install-glm:
+	meson wrap install glm
 
 build:
 	meson setup builddir
