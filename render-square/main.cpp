@@ -94,11 +94,10 @@ int main() {
     #version 330 core
 
     out vec4 FragColor;
-    uniform vec3 changing_color;
 
     void main()
     {
-        FragColor = vec4(changing_color, 1.0f);
+        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
     }
 )";
 
@@ -166,19 +165,12 @@ int main() {
                 transformation, glm::vec3(0.05f, 0.05f, 0.05f) * delta_time);
         }
 
-        // moves from 0.0 - 1.0 under the current time frame
-        float changing_blue_color = (sin(current_frame) / 2.0f) + 0.5f;
-        int changing_color_uniform =
-            uniform_locator(shader_program, "changing_color");
-
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shader_program);
         glUniformMatrix4fv(trans_loc, 1, GL_FALSE,
                            glm::value_ptr(transformation));
-        glUniform4f(changing_color_uniform, 1.0, 1.0, changing_blue_color,
-                    1.0f);
 
         glBindVertexArray(vertex_array_object);
 
