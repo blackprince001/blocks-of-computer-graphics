@@ -1,3 +1,8 @@
+/*
+    Name = Appiah Boadu Prince Kwabena
+    Index Number = 3024420
+*/
+
 #include <iostream>
 
 #include "./lib/include/glad/glad.h"
@@ -21,6 +26,7 @@ void cleanup();
 void close_window_on_esc_callback(GLFWwindow *);
 unsigned int uniform_locator(GLuint, const GLchar *);
 
+// Create enums for moves
 enum Move { UP, DOWN, LEFT, RIGHT, SCALE_UP, SCALE_DOWN, INVALID };
 Move handle_input_for_keys(GLFWwindow *window);
 
