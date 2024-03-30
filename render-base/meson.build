@@ -1,16 +1,13 @@
 project('render-base', ['cpp', 'c'],
   version : '0.1',
-  default_options : ['warning_level=3', 'cpp_std=c++20'])
+  default_options : ['warning_level=1', 'cpp_std=c++20'])
 
 glfw_proj = subproject('glfw')
 glfw_dep = glfw_proj.get_variable('glfw_dep')
 
-# glew_proj = subproject('glew')
-# glew_dep = glew_proj.get_variable('glew_dep')
+inc_dir = include_directories('include')
 
-# incdirs = include_directories('lib/')
-
-inc_glad = include_directories('lib/include/glad')
+inc_glad = include_directories('include/glad')
  
 libglad_files = files('lib/glad.c')
  
@@ -25,12 +22,30 @@ idep_glad = declare_dependency(
    include_directories: inc_glad,
 )
 
+# Own opengl_object library for creating vbos, vaos, and ebos
+inc_gl_object = include_directories('include/opengl_objects')
+ 
+lib_gl_object_files = files('src/opengl_objects/opengl_objects.cpp')
+ 
+lib_gl_object = static_library(
+   'gl_object',
+   lib_gl_object_files,
+   include_directories: inc_gl_object
+)
 
-# using the Cmake Copy and using targets as dependencies
-# cmake = import('cmake')
+# custom shader_class for compiling shaders.
+inc_engine = include_directories('include/shader_class')
+ 
+lib_engine_files = files('src/shader_class/shader_class.cpp')
+ 
+lib_engine = static_library(
+   'engine',
+   lib_engine_files,
+   include_directories: inc_engine
+)
 
-# glfw_proj = cmake.subproject('glfw')
-# glfw_dep = glfw_proj.dependency('all')
 
 executable('render-base',
-           'main.cpp', dependencies: [glfw_dep, idep_glad], link_args: '-lGL')
+           'main.cpp', include_directories: inc_dir,
+           dependencies: [glfw_dep, idep_glad], 
+           link_with: [lib_gl_object, lib_engine], link_args: '-lGL')

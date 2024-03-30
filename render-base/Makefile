@@ -1,3 +1,9 @@
+install-glfw:
+	meson wrap install glfw
+
+install-glm:
+	meson wrap install glm
+
 build:
 	meson setup builddir
 
@@ -6,3 +12,6 @@ clean:
 
 compile:
 	cd builddir && ninja
+
+run-bin:
+	./builddir/render-base
