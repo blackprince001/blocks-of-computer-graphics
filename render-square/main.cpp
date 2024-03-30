@@ -94,10 +94,11 @@ int main() {
     #version 330 core
 
     out vec4 FragColor;
+    uniform float alpha;
 
     void main()
     {
-        FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);
+        FragColor = vec4(1.0f, 0.5f, 0.2f, alpha);
     }
 )";
 
@@ -164,11 +165,15 @@ int main() {
             transformation = glm::scale(
                 transformation, glm::vec3(0.05f, 0.05f, 0.05f) * delta_time);
         }
+        unsigned int alpha_loc = uniform_locator(shader_program, "alpha");
+
+        float alpha_value_variant = sin(current_frame) * 0.5 + 0.5;
 
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glUseProgram(shader_program);
+        glUniform1f(alpha_loc, alpha_value_variant);
         glUniformMatrix4fv(trans_loc, 1, GL_FALSE,
                            glm::value_ptr(transformation));
 
