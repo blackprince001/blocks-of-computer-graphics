@@ -15,14 +15,14 @@ std::string get_string_from_enum(ShaderType e);
 namespace engine {
 
 class Shader {
-  public:
-    GLuint ID;
+public:
+  GLuint ID;
 
-    Shader(const char *vertexFile, const char *fragmentFile);
+  Shader(const char *vertexFile, const char *fragmentFile);
 
-    void check_compile_errors(GLuint shader, std::string type);
-    void use_shader_program();
-    void delete_shader_program();
+  void check_compile_errors(GLuint shader, std::string type);
+  void use_shader_program();
+  void delete_shader_program();
 };
 
 } // namespace engine

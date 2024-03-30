@@ -5,36 +5,36 @@
 
 namespace gl_object {
 class VBO {
-  public:
-    GLuint ID;
+public:
+  GLuint ID;
 
-    VBO(GLfloat *vertices, GLsizeiptr size);
+  VBO(GLfloat *vertices, GLsizeiptr size);
 
-    void bind_vbo();
-    void unbind_vbo();
-    void delete_vbo();
+  void bind_vbo();
+  void unbind_vbo();
+  void delete_vbo();
 };
 
 class VAO {
-  public:
-    GLuint ID;
-    VAO();
+public:
+  GLuint ID;
+  VAO();
 
-    // should probably set up the stride too
-    void link_vbo(VBO &VBO, GLuint layout);
-    void bind_vao();
-    void unbind_vao();
-    void delete_vao();
+  // should probably set up the stride too
+  void link_vbo(VBO &VBO, GLuint layout);
+  void bind_vao();
+  void unbind_vao();
+  void delete_vao();
 };
 
 class EBO {
-  public:
-    GLuint ID;
-    EBO(GLuint *indices, GLsizeiptr size);
+public:
+  GLuint ID;
+  EBO(GLuint *indices, GLsizeiptr size);
 
-    void bind_ebo();
-    void unbind_ebo();
-    void delete_ebo();
+  void bind_ebo();
+  void unbind_ebo();
+  void delete_ebo();
 };
 } // namespace gl_object
 
