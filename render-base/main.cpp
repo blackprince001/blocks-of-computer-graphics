@@ -3,48 +3,79 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "./lib/include/glad/glad.h"
-#include "./lib/render.hpp"
+#include "./include/glad/glad.h"
+#include "./include/opengl_objects/opengl_objects.h"
+#include "./include/shader_class/shader_class.h"
 #include "./subprojects/glfw-3.3.9/include/GLFW/glfw3.h"
 
 const int SCREENWIDTH = 800;
 const int SCREENHEIGHT = 600;
 
 int main() {
-    engine::Renderer r = engine::Renderer();
+    if (glfwInit() != GLFW_TRUE) {
+        std::cout << "GLFW Initialization Failed";
+    }
 
-    r.set_window_size(SCREENWIDTH, SCREENHEIGHT);
-    r.set_window_name("Testing Renderer Class.");
+    glfwWindowHint(GLFW_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    r.create_window();
-    r.create_opengl_context();
+    GLFWwindow *window = glfwCreateWindow(SCREENWIDTH, SCREENHEIGHT,
+                                          "render-base", nullptr, nullptr);
 
-    r.initial_glad();
-    // r.initial_viewport();
+    if (window == NULL) {
+        std::cout << "Failed to create GLFW window" << std::endl;
 
-    // add vertex data for a triangle
+        glfwTerminate();
+        return -1;
+    }
+
+    glfwMakeContextCurrent(window);
+
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cout << "Failed to Initialize GLAD";
+
+        glfwTerminate();
+        return 1;
+    }
+
+    glViewport(0, 0, SCREENWIDTH, SCREENHEIGHT);
+
     float vertices[] = {-0.5f, -0.5f, 0.0f, 0.5f, -0.5f,
                         0.0f,  0.0f,  0.5f, 0.0f};
 
-    // initialize the id for an opengl object
-    GLuint vertex_buffer_object{};
-    glGenBuffers(1, &vertex_buffer_object);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
+    engine::Shader shaderProgram("vertex_shader.vs", "fragment_shader.fs");
 
-    GLuint vertex_array_object{};
-    glGenVertexArrays(1, &vertex_array_object);
-    glBindVertexArray(vertex_array_object);
+    gl_object::VAO vertex_array_object;
+    vertex_array_object.bind_vao();
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float),
-                          (void *)0);
-    glEnableVertexAttribArray(0);
+    gl_object::VBO vertex_buffer_object(vertices, sizeof(vertices));
 
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    vertex_array_object.link_vbo(vertex_buffer_object, 0);
 
-    engine::Shader shader_program =
-        engine::Shader("./vertex_shader.vs", "./fragment_shader.fs");
+    vertex_array_object.unbind_vao();
+    vertex_buffer_object.unbind_vbo();
 
-    r.render(shader_program, vertex_array_object);
+    while (!glfwWindowShouldClose(window)) {
+        glClearColor(0.07f, 0.13f, 0.17f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-    r.close_renderer();
+        shaderProgram.use_shader_program();
+
+        vertex_array_object.bind_vao();
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
+
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    vertex_array_object.delete_vao();
+    vertex_buffer_object.delete_vbo();
+
+    shaderProgram.delete_shader_program();
+    glfwDestroyWindow(window);
+
+    glfwTerminate();
+
+    return 0;
 }
