@@ -2,6 +2,10 @@
 #include "lib/stb_image.hpp"
 
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -52,6 +56,14 @@ std::string read_from_file(const std::string &filepath) {
 void close_window_on_esc(GLFWwindow *window) {
   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     glfwSetWindowShouldClose(window, true);
+}
+
+unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
+  int uniform_located = glGetUniformLocation(shader_program, name);
+  if (uniform_located == -1)
+    std::cout << "Could not find uniform in shader";
+
+  return uniform_located;
 }
 
 int main() {
@@ -189,16 +201,84 @@ int main() {
 
   glValidateProgram(program_shader);
 
+  glUseProgram(program_shader);
+  glUniform1i(uniform_locator(program_shader, "texture1"), 0);
+
+  GLfloat current_frame{}, last_frame{};
+
+  glm::vec2 dvd_texture_position(0.0f, 0.0f);
+  glm::vec2 dvd_texture_velocity(-0.001f, -0.001f);
+
+  unsigned int model_loc = uniform_locator(program_shader, "model");
+  unsigned int projection_loc = uniform_locator(program_shader, "projection");
+  unsigned int view_loc = uniform_locator(program_shader, "view");
+
+  glm::mat4 model = glm::mat4(1.0f);
+  glm::mat4 projection = glm::mat4(1.0f);
+  glm::mat4 view = glm::mat4(1.0f);
+
+  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+  projection = glm::perspective(glm::radians(45.0f),
+                                (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
+                                0.1f, 100.0f);
+
+  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
+  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
+
+  const float WINDOW_LEFT = -1.0f;
+  const float WINDOW_RIGHT = 1.0f;
+  const float WINDOW_BOTTOM = -1.0f;
+  const float WINDOW_TOP = 1.0f;
+
   while (!glfwWindowShouldClose(window)) {
     close_window_on_esc(window);
 
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.3f, 0.3f, 0.9f, 1.0f);
 
-    glUseProgram(program_shader);
-    glBindVertexArray(vertex_array_object);
+    current_frame = glfwGetTime();
+    float deltaTime = current_frame - last_frame;
+    last_frame = current_frame;
 
+    float dvd_texture_halfwidth = 0.5f;
+    float dvd_texture_halfheight = 0.5f;
+
+    // Check for collision with left and right walls
+    if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
+
+      dvd_texture_position.x = WINDOW_LEFT + dvd_texture_halfwidth;
+      dvd_texture_velocity.x =
+          -dvd_texture_velocity.x; // Reverse horizontal velocity
+    } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT) {
+
+      dvd_texture_position.x = WINDOW_RIGHT - dvd_texture_halfwidth;
+      dvd_texture_velocity.x =
+          -dvd_texture_velocity.x; // Reverse horizontal velocity
+    }
+
+    // Check for collision with bottom and top walls
+    if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
+
+      dvd_texture_position.y = WINDOW_BOTTOM + dvd_texture_halfheight;
+      dvd_texture_velocity.y =
+          -dvd_texture_velocity.y; // Reverse vertical velocity
+    } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP) {
+
+      dvd_texture_position.y = WINDOW_TOP - dvd_texture_halfheight;
+      dvd_texture_velocity.y =
+          -dvd_texture_velocity.y; // Reverse vertical velocity
+    }
+
+    dvd_texture_position +=
+        dvd_texture_velocity * static_cast<float>(deltaTime);
+
+    model = glm::translate(model, glm::vec3(dvd_texture_position, 0.0f));
+
+    glUseProgram(program_shader);
+
+    glBindVertexArray(vertex_array_object);
     glBindTexture(GL_TEXTURE, texture);
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
