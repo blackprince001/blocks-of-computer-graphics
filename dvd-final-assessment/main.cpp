@@ -58,6 +58,10 @@ void close_window_on_esc(GLFWwindow *window) {
     glfwSetWindowShouldClose(window, true);
 }
 
+void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
+  glViewport(0, 0, width, height);
+}
+
 unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
   int uniform_located = glGetUniformLocation(shader_program, name);
   if (uniform_located == -1)
@@ -67,10 +71,10 @@ unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
 }
 
 int main() {
-  const GLfloat gl_data[] = {0.5f,  0.5f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-                             0.5f,  -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                             -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                             -0.5f, 0.5f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+  const GLfloat gl_data[] = {0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                             0.1f,  -0.1f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+                             -0.1f, -0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                             -0.1f, 0.1f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
   const unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
@@ -108,6 +112,10 @@ int main() {
     glfwTerminate();
     std::exit(EXIT_FAILURE);
   }
+
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+  glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
   unsigned int vertex_array_object{}, vertex_buffer_object{},
       element_buffer_object{};
@@ -163,6 +171,8 @@ int main() {
   }
 
   stbi_image_free(tex_data);
+  glActiveTexture(GL_TEXTURE0);
+  glBindTexture(GL_TEXTURE_2D, texture);
 
   auto program_shader{glCreateProgram()};
 
@@ -207,28 +217,10 @@ int main() {
   GLfloat current_frame{}, last_frame{};
 
   glm::vec2 dvd_texture_position(0.0f, 0.0f);
-  glm::vec2 dvd_texture_velocity(-0.001f, -0.001f);
+  glm::vec2 dvd_texture_velocity(0.01f, 0.01f);
 
   unsigned int model_loc = uniform_locator(program_shader, "model");
-  unsigned int projection_loc = uniform_locator(program_shader, "projection");
-  unsigned int view_loc = uniform_locator(program_shader, "view");
-
   glm::mat4 model = glm::mat4(1.0f);
-  glm::mat4 projection = glm::mat4(1.0f);
-  glm::mat4 view = glm::mat4(1.0f);
-
-  view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
-  projection = glm::perspective(glm::radians(45.0f),
-                                (float)WINDOW_WIDTH / (float)WINDOW_HEIGHT,
-                                0.1f, 100.0f);
-
-  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
-
-  const float WINDOW_LEFT = -1.0f;
-  const float WINDOW_RIGHT = 1.0f;
-  const float WINDOW_BOTTOM = -1.0f;
-  const float WINDOW_TOP = 1.0f;
 
   while (!glfwWindowShouldClose(window)) {
     close_window_on_esc(window);
@@ -240,45 +232,29 @@ int main() {
     float deltaTime = current_frame - last_frame;
     last_frame = current_frame;
 
-    float dvd_texture_halfwidth = 0.5f;
-    float dvd_texture_halfheight = 0.5f;
-
-    // Check for collision with left and right walls
-    if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
-
-      dvd_texture_position.x = WINDOW_LEFT + dvd_texture_halfwidth;
-      dvd_texture_velocity.x =
-          -dvd_texture_velocity.x; // Reverse horizontal velocity
-    } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT) {
-
-      dvd_texture_position.x = WINDOW_RIGHT - dvd_texture_halfwidth;
-      dvd_texture_velocity.x =
-          -dvd_texture_velocity.x; // Reverse horizontal velocity
+    if (dvd_texture_position.x >= 1.0f - dvd_texture_position.x / 2 - 0.1) {
+      dvd_texture_velocity.x = -dvd_texture_velocity.x;
     }
-
-    // Check for collision with bottom and top walls
-    if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
-
-      dvd_texture_position.y = WINDOW_BOTTOM + dvd_texture_halfheight;
-      dvd_texture_velocity.y =
-          -dvd_texture_velocity.y; // Reverse vertical velocity
-    } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP) {
-
-      dvd_texture_position.y = WINDOW_TOP - dvd_texture_halfheight;
-      dvd_texture_velocity.y =
-          -dvd_texture_velocity.y; // Reverse vertical velocity
+    if (dvd_texture_position.x <= -1.0f + (-dvd_texture_position.x) / 2 + 0.1) {
+      dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    }
+    if (dvd_texture_position.y >= 1.0f - dvd_texture_position.y / 2 + 0.1) {
+      dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    }
+    if (dvd_texture_position.y <= -1.0f + (-dvd_texture_position.y) / 2 - 0.1) {
+      dvd_texture_velocity.y = -dvd_texture_velocity.y;
     }
 
     dvd_texture_position +=
         dvd_texture_velocity * static_cast<float>(deltaTime);
 
-    model = glm::translate(model, glm::vec3(dvd_texture_position, 0.0f));
+    model = glm::translate(
+        model, glm::vec3(dvd_texture_position.x, dvd_texture_position.y, 0.0f));
 
     glUseProgram(program_shader);
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
     glBindVertexArray(vertex_array_object);
-    glBindTexture(GL_TEXTURE, texture);
-    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
@@ -289,6 +265,10 @@ int main() {
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
+
+  glDeleteBuffers(1, &vertex_buffer_object);
+  glDeleteBuffers(1, &element_buffer_object);
+  glDeleteVertexArrays(1, &vertex_array_object);
 
   glfwTerminate();
 }
