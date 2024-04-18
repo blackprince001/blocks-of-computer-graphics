@@ -28,9 +28,10 @@ std::string get_string_from_enum(ShaderType e) {
   }
 }
 
-engine::Shader::Shader(const char *vertexFile, const char *fragmentFile) {
-  std::string vertex_code = get_file_contents(vertexFile);
-  std::string fragement_code = get_file_contents(fragmentFile);
+engine::Shader::Shader(const char *vertex_shader_file,
+                       const char *fragment_shader_file) {
+  std::string vertex_code = get_file_contents(vertex_shader_file);
+  std::string fragement_code = get_file_contents(fragment_shader_file);
 
   const char *vertexSource = vertex_code.c_str();
   const char *fragmentSource = fragement_code.c_str();
