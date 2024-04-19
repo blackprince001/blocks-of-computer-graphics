@@ -1,3 +1,4 @@
+#include "glm/fwd.hpp"
 #include "lib/include/glad/glad.h"
 #include "lib/stb_image.hpp"
 
@@ -12,8 +13,8 @@
 #include <sstream>
 #include <string_view>
 
-constexpr int WINDOW_WIDTH{800};
-constexpr int WINDOW_HEIGHT{600};
+constexpr int WINDOW_WIDTH{1000};
+constexpr int WINDOW_HEIGHT{1000};
 
 void log_shader_error(const unsigned int shader,
                       const std::string &message = "") {
@@ -71,10 +72,10 @@ unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
 }
 
 int main() {
-  const GLfloat gl_data[] = {0.2f,  0.2f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-                             0.2f,  -0.2f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                             -0.2f, -0.2f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                             -0.2f, 0.2f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+  const GLfloat gl_data[] = {0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                             0.1f,  -0.1f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+                             -0.1f, -0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                             -0.1f, 0.1f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
 
   const unsigned int indices[] = {0, 1, 3, 1, 2, 3};
 
@@ -215,24 +216,13 @@ int main() {
   glUniform1i(uniform_locator(program_shader, "texture1"), 0);
 
   // float current_frame{}, last_frame{}, delta_frame{};
-  float delta_frame = 0.0001;
+  float delta_frame = 0.1;
 
-  glm::vec2 dvd_texture_position(0.0005f, -0.0002f);
-  glm::vec2 dvd_texture_velocity(1.0f, 2.0f);
+  glm::vec2 dvd_texture_position(0.0f, 0.0f);
+  glm::vec2 dvd_texture_speed(0.0001f, 0.0001f);
 
   unsigned int model_loc = uniform_locator(program_shader, "model");
   glm::mat4 model = glm::mat4(1.0f);
-
-  unsigned int view_loc = uniform_locator(program_shader, "view");
-  unsigned int projection_loc = uniform_locator(program_shader, "projection");
-
-  glm::mat4 projection =
-      glm::perspective(glm::pi<float>() * 0.5f, 4.0f / 3.0f, 0.1f, 100.f);
-  glm::mat4 view =
-      glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -3.0f));
-
-  glUniformMatrix4fv(view_loc, 1, GL_FALSE, glm::value_ptr(view));
-  glUniformMatrix4fv(projection_loc, 1, GL_FALSE, glm::value_ptr(projection));
 
   while (!glfwWindowShouldClose(window)) {
     close_window_on_esc(window);
@@ -241,31 +231,32 @@ int main() {
     glClearColor(0.3f, 0.3f, 0.9f, 1.0f);
 
     // current_frame = glfwGetTime();
-    // delta_frame = (current_frame - last_frame) / 1000;
+    // delta_frame = current_frame - last_frame;
     // last_frame = current_frame;
 
-    std::cout << "frame: " << delta_frame << "\n";
-
-    if (dvd_texture_position.x >= 0.01f) {
-      dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    if (dvd_texture_position.x >= 1.0f - dvd_texture_speed.x - 0.1) {
+      dvd_texture_speed.x = -dvd_texture_speed.x;
     }
-    if (dvd_texture_position.x <= -0.01f) {
-      dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    if (dvd_texture_position.x <= -1.0f + (-dvd_texture_speed.x) + 0.1) {
+      dvd_texture_speed.x = -dvd_texture_speed.x;
     }
-    if (dvd_texture_position.y >= 0.01f) {
-      dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    if (dvd_texture_position.x >= 1.0f - dvd_texture_speed.y - 0.2) {
+      dvd_texture_speed.y = -dvd_texture_speed.y;
     }
-    if (dvd_texture_position.y <= -0.01f) {
-      dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    if (dvd_texture_position.x <= -1.0f + (-dvd_texture_speed.y) + 0.2) {
+      dvd_texture_speed.y = -dvd_texture_speed.y;
     }
 
-    dvd_texture_position += dvd_texture_velocity * delta_frame;
+    dvd_texture_position.x =
+        dvd_texture_position.x + dvd_texture_speed.x * delta_frame;
+    dvd_texture_position.y =
+        dvd_texture_position.y + dvd_texture_speed.y * delta_frame;
 
     std::cout << "pos {x: " << dvd_texture_position.x
               << " y: " << dvd_texture_position.y << "}\n";
 
-    std::cout << "vel {x: " << dvd_texture_velocity.x
-              << " y: " << dvd_texture_velocity.y << "}\n\n";
+    std::cout << "vel {x: " << dvd_texture_speed.x
+              << " y: " << dvd_texture_speed.y << "}\n\n";
 
     model = glm::translate(
         model, glm::vec3(dvd_texture_position.x, dvd_texture_position.y, 0.0f));
