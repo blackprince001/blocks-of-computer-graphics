@@ -1,3 +1,6 @@
+// Name: Appiah Boadu Prince Kwabena
+// Index Number: 3024420
+
 #include "lib/include/glad/glad.h"
 #include <GLFW/glfw3.h>
 #include <cstdlib>
