@@ -1,34 +1,100 @@
-#include "glm/fwd.hpp"
 #include "lib/include/glad/glad.h"
-#include "lib/stb_image.hpp"
-
 #include <GLFW/glfw3.h>
+#include <cstdlib>
+#include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
-#include <filesystem>
+#include "lib/stb_image.hpp"
+
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string_view>
 
-constexpr int WINDOW_WIDTH{1000};
-constexpr int WINDOW_HEIGHT{1000};
+constexpr int WINDOW_WIDTH{800};
+constexpr int WINDOW_HEIGHT{600};
 
-void log_shader_error(const unsigned int shader,
-                      const std::string &message = "") {
-  constexpr unsigned int LOG_BUFFER_SIZE_BYTES{512};
-  char log_info[LOG_BUFFER_SIZE_BYTES];
+const float vertices[] = {
+    -0.125f, -1.0f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    0.125f,  -1.0f,  0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+    0.125f,  -0.75f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+    -0.125f, -0.75f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+};
 
-  glGetShaderInfoLog(shader, LOG_BUFFER_SIZE_BYTES, nullptr, log_info);
+float curr_time, last_time, delta_time;
+bool is_paused = false;
 
-  if (!message.empty()) {
-    std::cout << message << std::endl;
+enum Move { UP, DOWN, LEFT, RIGHT };
+Move direction = RIGHT;
+
+const char *parse_move(Move move) {
+  if (move == UP)
+    return "UP";
+  if (move == DOWN)
+    return "DOWN";
+  if (move == RIGHT)
+    return "RIGHT";
+  if (move == LEFT)
+    return "LEFT";
+
+  return "NONE";
+}
+
+void processInputs(GLFWwindow *window) {
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
+
+  if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    is_paused = !is_paused;
+}
+
+unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
+  int uniform_located = glGetUniformLocation(shader_program, name);
+  if (uniform_located == -1)
+    std::cout << "Could not find uniform in shader";
+
+  return uniform_located;
+}
+
+// movement
+void actions(GLFWwindow *window, GLuint shader_program, glm::mat4 &trans) {
+  glUseProgram(shader_program);
+
+  if (!is_paused) {
+    if (direction == RIGHT) {
+      trans = glm::translate(trans, glm::vec3(0.55f, 0.5f, 0.0f) * delta_time);
+
+      if (trans[3][0] >= 0.85f) {
+        direction = UP;
+      }
+    } else if (direction == UP) {
+      trans = glm::translate(trans, glm::vec3(-0.55f, 0.5f, 0.0f) * delta_time);
+
+      if (trans[3][1] >= 1.5f) {
+        direction = LEFT;
+      }
+    } else if (direction == LEFT) {
+      trans =
+          glm::translate(trans, glm::vec3(-0.55f, -0.5f, 0.0f) * delta_time);
+
+      if (trans[3][0] <= -0.85f) {
+        direction = DOWN;
+      }
+    } else if (direction == DOWN) {
+      trans = glm::translate(trans, glm::vec3(0.55f, -0.5f, 0.0f) * delta_time);
+
+      if (trans[3][1] <= -0.02f) {
+        direction = RIGHT;
+      }
+    }
+
+    std::cout << "Logging info - pos: (" << trans[3][0] << ", " << trans[3][1]
+              << "), dir: " << parse_move(direction) << std::endl;
   }
-  std::cout << log_info << std::endl;
-
-  std::exit(EXIT_FAILURE);
 }
 
 // This only works for POSIX paths. If you want it to work on Windows
@@ -54,40 +120,7 @@ std::string read_from_file(const std::string &filepath) {
   return file_contents;
 }
 
-void close_window_on_esc(GLFWwindow *window) {
-  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, true);
-}
-
-void framebuffer_size_callback(GLFWwindow *window, int width, int height) {
-  glViewport(0, 0, width, height);
-}
-
-unsigned int uniform_locator(GLuint shader_program, const GLchar *name) {
-  int uniform_located = glGetUniformLocation(shader_program, name);
-  if (uniform_located == -1)
-    std::cout << "Could not find uniform in shader";
-
-  return uniform_located;
-}
-
 int main() {
-  const GLfloat gl_data[] = {0.1f,  0.1f,  0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-                             0.1f,  -0.1f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-                             -0.1f, -0.1f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-                             -0.1f, 0.1f,  0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f};
-
-  const unsigned int indices[] = {0, 1, 3, 1, 2, 3};
-
-  auto vertex_shader_path = get_absolute_path("../vertex.vs");
-  auto fragment_shader_path = get_absolute_path("../fragment.fs");
-
-  auto read_vshader_source = read_from_file(vertex_shader_path);
-  const char *vertex_shader_source = read_vshader_source.c_str();
-
-  auto read_fshader_source = read_from_file(fragment_shader_path);
-  auto fragment_shader_source = read_fshader_source.c_str();
-
   if (!glfwInit()) {
     std::cout << "Failed to initialize glfw\n";
     std::exit(EXIT_FAILURE);
@@ -114,46 +147,80 @@ int main() {
     std::exit(EXIT_FAILURE);
   }
 
-  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-  glEnable(GL_BLEND);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-  unsigned int vertex_array_object{}, vertex_buffer_object{},
-      element_buffer_object{};
+  auto vertex_shader_path = get_absolute_path("../vertex.vs");
+  auto fragment_shader_path = get_absolute_path("../fragment.fs");
 
+  auto read_vshader_source = read_from_file(vertex_shader_path);
+  const char *vertex_shader_source = read_vshader_source.c_str();
+
+  auto read_fshader_source = read_from_file(fragment_shader_path);
+  auto fragment_shader_source = read_fshader_source.c_str();
+
+  GLint success;
+  char info_log[512];
+
+  GLuint vertex_array_object, vertex_buffer_object;
   glGenVertexArrays(1, &vertex_array_object);
-
-  glGenBuffers(1, &vertex_buffer_object);
-  glGenBuffers(1, &element_buffer_object);
-
   glBindVertexArray(vertex_array_object);
 
+  glGenBuffers(1, &vertex_buffer_object);
   glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_object);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(gl_data), gl_data, GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element_buffer_object);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices,
-               GL_STATIC_DRAW);
-
-  // rectangle for dvd image attribute and stride
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
-  // color attribute and stride
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
-                        (void *)(3 * sizeof(float)));
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void *)0);
+
   glEnableVertexAttribArray(1);
-  // texture coordinates attribute and stride
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
+                        (void *)(3 * sizeof(float)));
+
+  glEnableVertexAttribArray(2);
   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float),
                         (void *)(6 * sizeof(float)));
-  glEnableVertexAttribArray(2);
+
+  auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex_shader, 1, &vertex_shader_source, NULL);
+  glCompileShader(vertex_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+
+  if (!success) {
+    glGetShaderInfoLog(vertex_shader, 512, NULL, info_log);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+              << info_log << std::endl;
+  }
+
+  auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+  glCompileShader(fragment_shader);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
+
+  if (!success) {
+    glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
+    std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
+              << info_log << std::endl;
+  }
+
+  auto shader_program = glCreateProgram();
+  glAttachShader(shader_program, vertex_shader);
+  glAttachShader(shader_program, fragment_shader);
+  glLinkProgram(shader_program);
+
+  glGetProgramiv(shader_program, GL_LINK_STATUS, &success);
+  if (!success) {
+    glGetProgramInfoLog(shader_program, 512, NULL, info_log);
+    std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
+              << info_log << std::endl;
+  }
 
   GLuint texture;
   glGenTextures(1, &texture);
   glBindTexture(GL_TEXTURE_2D, texture);
+
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-                  GL_LINEAR_MIPMAP_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
   int width, height, nr_channels;
@@ -175,110 +242,36 @@ int main() {
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture);
 
-  auto program_shader{glCreateProgram()};
+  glUseProgram(shader_program);
 
-  auto vertex_shader{glCreateShader(GL_VERTEX_SHADER)};
-
-  auto fragment_shader{glCreateShader(GL_FRAGMENT_SHADER)};
-
-  glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr);
-  glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr);
-
-  int successful{};
-
-  glCompileShader(vertex_shader);
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &successful);
-
-  if (!successful) {
-    log_shader_error(vertex_shader, "Error::Shader::Vertex::Compilation");
-  }
-
-  glCompileShader(fragment_shader);
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &successful);
-
-  if (!successful) {
-    log_shader_error(fragment_shader, "Error::Shader::Fragment::Compilation");
-  }
-
-  glAttachShader(program_shader, vertex_shader);
-  glAttachShader(program_shader, fragment_shader);
-
-  glLinkProgram(program_shader);
-  glGetShaderiv(program_shader, GL_LINK_STATUS, &successful);
-
-  if (!successful) {
-    log_shader_error(program_shader, "Error::Shader::Program::Linking");
-  }
-
-  glValidateProgram(program_shader);
-
-  glUseProgram(program_shader);
-  glUniform1i(uniform_locator(program_shader, "texture1"), 0);
-
-  // float current_frame{}, last_frame{}, delta_frame{};
-  float delta_frame = 0.1;
-
-  glm::vec2 dvd_texture_position(0.0f, 0.0f);
-  glm::vec2 dvd_texture_speed(0.0001f, 0.0001f);
-
-  unsigned int model_loc = uniform_locator(program_shader, "model");
-  glm::mat4 model = glm::mat4(1.0f);
+  auto transform_loc = uniform_locator(shader_program, "transform");
+  glm::mat4 trans = glm::mat4(1.0f);
 
   while (!glfwWindowShouldClose(window)) {
-    close_window_on_esc(window);
+    processInputs(window);
 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
-    glClearColor(0.3f, 0.3f, 0.9f, 1.0f);
+    glUseProgram(shader_program);
 
-    // current_frame = glfwGetTime();
-    // delta_frame = current_frame - last_frame;
-    // last_frame = current_frame;
+    curr_time = glfwGetTime();
+    delta_time = curr_time - last_time;
+    last_time = curr_time;
 
-    if (dvd_texture_position.x >= 1.0f - dvd_texture_speed.x - 0.1) {
-      dvd_texture_speed.x = -dvd_texture_speed.x;
-    }
-    if (dvd_texture_position.x <= -1.0f + (-dvd_texture_speed.x) + 0.1) {
-      dvd_texture_speed.x = -dvd_texture_speed.x;
-    }
-    if (dvd_texture_position.x >= 1.0f - dvd_texture_speed.y - 0.2) {
-      dvd_texture_speed.y = -dvd_texture_speed.y;
-    }
-    if (dvd_texture_position.x <= -1.0f + (-dvd_texture_speed.y) + 0.2) {
-      dvd_texture_speed.y = -dvd_texture_speed.y;
-    }
-
-    dvd_texture_position.x =
-        dvd_texture_position.x + dvd_texture_speed.x * delta_frame;
-    dvd_texture_position.y =
-        dvd_texture_position.y + dvd_texture_speed.y * delta_frame;
-
-    std::cout << "pos {x: " << dvd_texture_position.x
-              << " y: " << dvd_texture_position.y << "}\n";
-
-    std::cout << "vel {x: " << dvd_texture_speed.x
-              << " y: " << dvd_texture_speed.y << "}\n\n";
-
-    model = glm::translate(
-        model, glm::vec3(dvd_texture_position.x, dvd_texture_position.y, 0.0f));
-
-    glUseProgram(program_shader);
-    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
+    actions(window, shader_program, trans);
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
 
     glBindVertexArray(vertex_array_object);
+    glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glBindVertexArray(0);
-
-    glfwSwapBuffers(window);
     glfwPollEvents();
+    glfwSwapBuffers(window);
   }
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
-
-  glDeleteBuffers(1, &vertex_buffer_object);
-  glDeleteBuffers(1, &element_buffer_object);
-  glDeleteVertexArrays(1, &vertex_array_object);
+  glDeleteProgram(shader_program);
 
   glfwTerminate();
+  return 0;
 }
