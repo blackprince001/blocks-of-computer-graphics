@@ -112,17 +112,15 @@ int main()
   auto vertex_shader_path = get_absolute_path("../vertex.vs");
   auto fragment_shader_path = get_absolute_path("../fragment.fs");
 
-  std::cout << vertex_shader_path << fragment_shader_path << std::endl;
-
   auto read_vshader_source = read_from_file(vertex_shader_path);
   const char* vertex_shader_source = read_vshader_source.c_str();
 
   auto read_fshader_source = read_from_file(fragment_shader_path);
   auto fragment_shader_source = read_fshader_source.c_str();
 
-  const GLfloat gl_data[] = { 0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    0.1f, -0.1f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -0.1f, -0.1f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f, -0.1f, 0.1f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
+  const GLfloat gl_data[] = { 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -0.5f, -0.5f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
 
   const unsigned int indices[] = { 0, 1, 3, 1, 2, 3 };
 
@@ -162,8 +160,6 @@ int main()
   stbi_set_flip_vertically_on_load(true);
 
   auto texture_image_path = get_absolute_path("../texture/dvd-logo.png");
-
-  std::cout << texture_image_path << std::endl;
   unsigned char* tex_data
       = stbi_load(texture_image_path.c_str(), &width, &height, &nr_channels, 0);
 
@@ -174,7 +170,7 @@ int main()
   } else {
     std::cout << "Failed to load texture" << std::endl;
   }
-
+  stbi_image_free(tex_data);
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -187,19 +183,19 @@ int main()
   glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr);
   glShaderSource(fragment_shader, 1, &fragment_shader_source, nullptr);
 
-  int successful {};
+  int compile_flag {};
 
   glCompileShader(vertex_shader);
-  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &successful);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &compile_flag);
 
-  if (!successful) {
+  if (!compile_flag) {
     log_shader_error(vertex_shader, "Error::Shader::Vertex::Compilation");
   }
 
   glCompileShader(fragment_shader);
-  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &successful);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &compile_flag);
 
-  if (!successful) {
+  if (!compile_flag) {
     log_shader_error(fragment_shader, "Error::Shader::Fragment::Compilation");
   }
 
@@ -207,9 +203,9 @@ int main()
   glAttachShader(program_shader, fragment_shader);
 
   glLinkProgram(program_shader);
-  glGetShaderiv(program_shader, GL_LINK_STATUS, &successful);
+  glGetShaderiv(program_shader, GL_LINK_STATUS, &compile_flag);
 
-  if (!successful) {
+  if (!compile_flag) {
     log_shader_error(program_shader, "Error::Shader::Program::Linking");
   }
 
@@ -217,21 +213,21 @@ int main()
   glUseProgram(program_shader);
   glUniform1i(uniform_locator(program_shader, "texture1"), 0);
 
-  float current_frame {}, last_frame {}, delta_frame {};
+  // float current_frame {}, last_frame {}, delta_frame {};
 
-  glm::vec2 dvd_texture_position(0.0f, 0.0f);
-  glm::vec2 dvd_texture_velocity(0.001f, 0.001f);
+  // glm::vec2 dvd_texture_position(0.0f, 0.0f);
+  // glm::vec2 dvd_texture_velocity(0.001f, 0.001f);
 
-  auto transform_loc = uniform_locator(program_shader, "transform");
-  glm::mat4 trans = glm::mat4(1.0f);
+  // auto transform_loc = uniform_locator(program_shader, "transform");
+  // glm::mat4 trans = glm::mat4(1.0f);
 
-  float dvd_texture_halfwidth = 0.1f;
-  float dvd_texture_halfheight = 0.1f;
+  // float dvd_texture_halfwidth = 0.1f;
+  // float dvd_texture_halfheight = 0.1f;
 
-  const float WINDOW_LEFT = -1.0f;
-  const float WINDOW_RIGHT = 1.0f;
-  const float WINDOW_BOTTOM = -1.0f;
-  const float WINDOW_TOP = 1.0f;
+  // const float WINDOW_LEFT = -1.0f;
+  // const float WINDOW_RIGHT = 1.0f;
+  // const float WINDOW_BOTTOM = -1.0f;
+  // const float WINDOW_TOP = 1.0f;
 
   while (!glfwWindowShouldClose(window)) {
     processInputs(window);
@@ -239,41 +235,45 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.3f, 0.3f, 0.9f, 1.0f);
 
-    current_frame = glfwGetTime();
-    delta_frame = current_frame - last_frame;
-    last_frame = current_frame;
+    // current_frame = glfwGetTime();
+    // delta_frame = current_frame - last_frame;
+    // last_frame = current_frame;
 
-    if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
-      dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    // if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
+    //   dvd_texture_velocity.x = -dvd_texture_velocity.x;
 
-    } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT) {
-      dvd_texture_velocity.x = -dvd_texture_velocity.x;
-    }
-    if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
-      dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    // } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT)
+    // {
+    //   dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    // }
+    // if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
+    //   dvd_texture_velocity.y = -dvd_texture_velocity.y;
 
-    } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP) {
-      dvd_texture_velocity.y = -dvd_texture_velocity.y;
-    }
+    // } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP)
+    // {
+    //   dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    // }
 
-    dvd_texture_position += dvd_texture_velocity * delta_frame;
+    // dvd_texture_position += dvd_texture_velocity * delta_frame;
 
-    std::cout << "x: " << dvd_texture_position.x
-              << " y: " << dvd_texture_position.y << std::endl;
+    // std::cout << "x: " << dvd_texture_position.x
+    //           << " y: " << dvd_texture_position.y << std::endl;
 
-    trans = glm::translate(
-        trans, glm::vec3(dvd_texture_position.x, dvd_texture_position.y, 0.0f));
+    // trans = glm::translate(
+    //     trans, glm::vec3(dvd_texture_position.x, dvd_texture_position.y,
+    //     0.0f));
 
     glUseProgram(program_shader);
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
-
+    // glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
     glBindVertexArray(vertex_array_object);
+
+    glBindTexture(GL_TEXTURE_2D, texture);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
     glBindVertexArray(0);
 
-    glfwSwapBuffers(window);
     glfwPollEvents();
+    glfwSwapBuffers(window);
   }
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
