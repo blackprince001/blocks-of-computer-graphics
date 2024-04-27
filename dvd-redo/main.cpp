@@ -17,6 +17,12 @@
 const int WINDOW_WIDTH { 800 };
 const int WINDOW_HEIGHT { 600 };
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void close_on_esc_callback(GLFWwindow* window);
+void log_shader_error(const unsigned int shader, const std::string& message);
+std::string read_from_file(const std::string& filepath);
+std::string get_absolute_path(const std::string& relative_path);
+
 int main()
 {
   if (!glfwInit()) {
@@ -45,6 +51,8 @@ int main()
     std::exit(EXIT_FAILURE);
   }
 
+  glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+
   while (!glfwWindowShouldClose(window)) {
 
     glClear(GL_COLOR_BUFFER_BIT);
@@ -55,4 +63,54 @@ int main()
   }
 
   return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+{
+  glViewport(0, 0, width, height);
+}
+
+void close_on_esc_callback(GLFWwindow* window)
+{
+  if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    glfwSetWindowShouldClose(window, true);
+}
+
+void log_shader_error(
+    const unsigned int shader, const std::string& message = "")
+{
+  const unsigned int LOG_BUFFER_SIZE_BYTES = 512;
+  char log_info[LOG_BUFFER_SIZE_BYTES];
+
+  glGetShaderInfoLog(shader, LOG_BUFFER_SIZE_BYTES, nullptr, log_info);
+
+  if (!message.empty()) {
+    std::cout << message << std::endl;
+  }
+  std::cout << log_info << std::endl;
+
+  std::exit(EXIT_FAILURE);
+}
+
+std::string get_absolute_path(const std::string& relative_path)
+{
+  return std::filesystem::current_path().string() + "/" + relative_path;
+}
+
+std::string read_from_file(const std::string& filepath)
+{
+  std::string file_contents;
+  std::ifstream file;
+  std::stringstream ss;
+
+  file.open(filepath);
+  if (!file.is_open()) {
+    std::cout << "failed to load file: " << filepath << "\n";
+  }
+
+  ss << file.rdbuf();
+  file_contents = ss.str();
+  file.close();
+
+  return file_contents;
 }
