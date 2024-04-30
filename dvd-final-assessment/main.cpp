@@ -213,21 +213,21 @@ int main()
   glUseProgram(program_shader);
   glUniform1i(uniform_locator(program_shader, "texture1"), 0);
 
-  // float current_frame {}, last_frame {}, delta_frame {};
+  float current_frame {}, last_frame {}, delta_frame {};
 
-  // glm::vec2 dvd_texture_position(0.0f, 0.0f);
-  // glm::vec2 dvd_texture_velocity(0.001f, 0.001f);
+  glm::vec2 dvd_texture_position(0.0f, 0.0f);
+  glm::vec2 dvd_texture_velocity(0.001f, 0.001f);
 
-  // auto transform_loc = uniform_locator(program_shader, "transform");
-  // glm::mat4 trans = glm::mat4(1.0f);
+  auto transform_loc = uniform_locator(program_shader, "transform");
+  glm::mat4 trans = glm::mat4(1.0f);
 
-  // float dvd_texture_halfwidth = 0.1f;
-  // float dvd_texture_halfheight = 0.1f;
+  float dvd_texture_halfwidth = 0.1f;
+  float dvd_texture_halfheight = 0.1f;
 
-  // const float WINDOW_LEFT = -1.0f;
-  // const float WINDOW_RIGHT = 1.0f;
-  // const float WINDOW_BOTTOM = -1.0f;
-  // const float WINDOW_TOP = 1.0f;
+  const float WINDOW_LEFT = -1.0f;
+  const float WINDOW_RIGHT = 1.0f;
+  const float WINDOW_BOTTOM = -1.0f;
+  const float WINDOW_TOP = 1.0f;
 
   while (!glfwWindowShouldClose(window)) {
     processInputs(window);
@@ -235,36 +235,33 @@ int main()
     glClear(GL_COLOR_BUFFER_BIT);
     glClearColor(0.3f, 0.3f, 0.9f, 1.0f);
 
-    // current_frame = glfwGetTime();
-    // delta_frame = current_frame - last_frame;
-    // last_frame = current_frame;
+    current_frame = glfwGetTime();
+    delta_frame = current_frame - last_frame;
+    last_frame = current_frame;
 
-    // if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
-    //   dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    if (dvd_texture_position.x - dvd_texture_halfwidth < WINDOW_LEFT) {
+      dvd_texture_velocity.x = -dvd_texture_velocity.x;
 
-    // } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT)
-    // {
-    //   dvd_texture_velocity.x = -dvd_texture_velocity.x;
-    // }
-    // if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
-    //   dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    } else if (dvd_texture_position.x + dvd_texture_halfwidth > WINDOW_RIGHT) {
+      dvd_texture_velocity.x = -dvd_texture_velocity.x;
+    }
+    if (dvd_texture_position.y - dvd_texture_halfheight < WINDOW_BOTTOM) {
+      dvd_texture_velocity.y = -dvd_texture_velocity.y;
 
-    // } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP)
-    // {
-    //   dvd_texture_velocity.y = -dvd_texture_velocity.y;
-    // }
+    } else if (dvd_texture_position.y + dvd_texture_halfheight > WINDOW_TOP) {
+      dvd_texture_velocity.y = -dvd_texture_velocity.y;
+    }
 
-    // dvd_texture_position += dvd_texture_velocity * delta_frame;
+    dvd_texture_position += dvd_texture_velocity * delta_frame;
 
-    // std::cout << "x: " << dvd_texture_position.x
-    //           << " y: " << dvd_texture_position.y << std::endl;
+    std::cout << "x: " << dvd_texture_position.x
+              << " y: " << dvd_texture_position.y << std::endl;
 
-    // trans = glm::translate(
-    //     trans, glm::vec3(dvd_texture_position.x, dvd_texture_position.y,
-    //     0.0f));
+    trans = glm::translate(
+        trans, glm::vec3(dvd_texture_position.x, dvd_texture_position.y, 0.0f));
 
     glUseProgram(program_shader);
-    // glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(trans));
     glBindVertexArray(vertex_array_object);
 
     glBindTexture(GL_TEXTURE_2D, texture);
