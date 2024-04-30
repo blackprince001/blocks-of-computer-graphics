@@ -118,9 +118,9 @@ int main()
   auto read_fshader_source = read_from_file(fragment_shader_path);
   auto fragment_shader_source = read_fshader_source.c_str();
 
-  const GLfloat gl_data[] = { 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-    0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -0.5f, -0.5f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f, 0.0f, -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
+  const GLfloat gl_data[] = { 0.1f, 0.1f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+    0.1f, -0.1f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, -0.1f, -0.1f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f, -0.1f, 0.1f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f };
 
   const unsigned int indices[] = { 0, 1, 3, 1, 2, 3 };
 

@@ -18,6 +18,11 @@
 const int WINDOW_WIDTH { 800 };
 const int WINDOW_HEIGHT { 600 };
 
+const GLfloat gl_data[] = { 0.1f, 0.1f, 0.0f, 1.0f, 1.0f, 0.1f, -0.1f, 0.0f,
+  1.0f, 0.0f, -0.1f, -0.1f, 0.0f, 0.0f, 0.0f, -0.1f, 0.1f, 0.0f, 0.0f, 1.0f };
+
+const unsigned int indices[] = { 0, 1, 3, 1, 2, 3 };
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void close_on_esc_callback(GLFWwindow* window);
 void log_shader_error(const unsigned int shader, const std::string& message);
@@ -83,11 +88,6 @@ int main()
 )";
 
   // auto texture_image_path = get_absolute_path("../texture/dvd-logo.png");
-
-  const GLfloat gl_data[] = { 0.1f, 0.1f, 0.0f, 1.0f, 1.0f, 0.1f, -0.1f, 0.0f,
-    1.0f, 0.0f, -0.1f, -0.1f, 0.0f, 0.0f, 0.0f, -0.1f, 0.1f, 0.0f, 0.0f, 1.0f };
-
-  const unsigned int indices[] = { 0, 1, 3, 1, 2, 3 };
 
   GLuint vertex_array_object, vertex_buffer_object, element_buffer_object;
 
